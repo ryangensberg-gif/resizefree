@@ -1,461 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>One‑Page Image Resizer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResizeFree – Free Online Image Resizer</title>
+  <meta name="description" content="ResizeFree is a fast and free online image resizer. Upload, resize, copy, or download images instantly without losing quality. Simple, quick, and secure.">
   <style>
-    :root {
-      --bg: #0b0f14;
-      --panel: #121923;
-      --panel-2: #0f151e;
-      --text: #eaf0f6;
-      --muted: #9fb0c3;
-      --accent: #6ea8fe;
-      --accent-2: #51d6a9;
-      --danger: #ff6b6b;
-      --shadow: 0 6px 24px rgba(0,0,0,.25), 0 2px 6px rgba(0,0,0,.2);
-      --radius: 16px;
-    }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
     body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
-      background: radial-gradient(1000px 600px at 80% -10%, #1c2430, transparent 60%),
-                  radial-gradient(900px 500px at -20% 0%, #14202d, transparent 60%),
-                  var(--bg);
-      line-height: 1.45;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f9f9f9;
     }
-    .wrap {
-      max-width: 1100px;
-      margin: 32px auto 64px;
-      padding: 0 16px;
+    h1 {
+      margin-bottom: 20px;
     }
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 16px; margin-bottom: 18px;
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
     }
-    .brand { font-weight: 800; letter-spacing: .3px; font-size: clamp(20px, 3vw, 28px); }
-    .sub { color: var(--muted); font-size: 14px; }
-
-    .grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
-    @media (max-width: 960px) {
-      .grid { grid-template-columns: 1fr; }
+    canvas {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      max-width: 100%;
     }
-
-    .card {
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 16px;
-    }
-
-    .drop {
-      display: grid; place-items: center; text-align: center;
-      border: 2px dashed rgba(255,255,255,.12);
-      border-radius: 14px; padding: 24px; height: 340px;
-      transition: .2s ease; background: rgba(255,255,255,.02);
-    }
-    .drop.dragover { border-color: var(--accent); background: rgba(110,168,254,.08); }
-    .drop input[type=file] { display: none; }
-    .drop .cta { display: inline-block; padding: 10px 14px; background: var(--accent); color: #061222; border-radius: 10px; font-weight: 700; box-shadow: var(--shadow); }
-
-    .meta { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
-    .meta div { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: var(--muted); }
-
-    .controls { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
-    .controls .full { grid-column: 1 / -1; }
-    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
-    input[type=number], input[type=text], select {
-      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.1);
-      background: #0e1620; color: var(--text);
-    }
-    input[type=range] { width: 100%; }
-    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    .btn {
-      padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12);
-      background: #0e1620; color: var(--text); font-weight: 600; cursor: pointer;
-      transition: .2s ease; box-shadow: var(--shadow);
-    }
-    .btn.primary { background: var(--accent); color: #061222; border-color: transparent; }
-    .btn.ghost { background: rgba(255,255,255,.06); }
-    .btn.danger { background: #251517; border-color: rgba(255,255,255,.1); color: #ffd3d3; }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-
-    .preview-wrap { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    .preview { display: grid; place-items: center; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.06); height: 340px; }
-    canvas, img { max-width: 100%; height: auto; display: block; }
-
-    .note { color: var(--muted); font-size: 12px; }
-    footer { margin-top: 20px; color: var(--muted); font-size: 12px; text-align: center; }
-    a { color: var(--accent-2); text-decoration: none; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <div class="brand">⚡ Image Resizer</div>
-        <div class="sub">Resize, convert & compress right in your browser. No uploads.</div>
-      </div>
-    </header>
+  <h1>ResizeFree – Free Online Image Resizer</h1>
 
-    <div class="grid">
-      <!-- Left: Input & Controls -->
-      <section class="card">
-        <div id="drop" class="drop" tabindex="0" aria-label="Upload image area">
-          <div>
-            <p style="margin-top:0">Drag & drop an image here</p>
-            <p class="sub" style="margin-bottom:12px">or</p>
-            <label class="cta" for="file">Choose File</label>
-            <input id="file" type="file" accept="image/*" />
-            <p class="note" style="margin-top:12px">PNG, JPG, WEBP, GIF • up to ~25MB (browser‑dependent)</p>
-          </div>
-        </div>
+  <input type="file" id="upload" accept="image/*"><br>
+  <input type="number" id="width" placeholder="Width (px)">
+  <input type="number" id="height" placeholder="Height (px)">
+  <button onclick="resizeImage()">Resize</button>
+  <button onclick="copyImage()">Copy Image</button>
+  <button onclick="downloadImage()">Download Image</button>
 
-        <div id="sourceMeta" class="meta" hidden>
-          <div><strong>Original:</strong> <span id="origDims">—</span></div>
-          <div><strong>Size:</strong> <span id="origSize">—</span></div>
-        </div>
-
-        <hr style="border: none; border-top: 1px solid rgba(255,255,255,.08); margin: 16px 0 12px" />
-
-        <div class="controls">
-          <div>
-            <label for="width">Width (px)</label>
-            <input id="width" type="number" min="1" placeholder="auto" />
-          </div>
-          <div>
-            <label for="height">Height (px)</label>
-            <input id="height" type="number" min="1" placeholder="auto" />
-          </div>
-          <div class="row full">
-            <label class="row" style="gap:8px; margin: 0; align-items:center">
-              <input id="lock" type="checkbox" checked /> Lock aspect
-            </label>
-            <label class="row" style="gap:8px; margin: 0; align-items:center">
-              <input id="contain" type="radio" name="fit" value="contain" checked /> Contain
-            </label>
-            <label class="row" style="gap:8px; margin: 0; align-items:center">
-              <input id="cover" type="radio" name="fit" value="cover" /> Cover (crop)
-            </label>
-            <label class="row" style="gap:8px; margin: 0; align-items:center">
-              <input id="stretch" type="radio" name="fit" value="stretch" /> Exact (stretch)
-            </label>
-          </div>
-          <div>
-            <label for="format">Format</label>
-            <select id="format">
-              <option value="image/webp">WEBP (smallest)</option>
-              <option value="image/jpeg">JPEG</option>
-              <option value="image/png">PNG (lossless)</option>
-            </select>
-          </div>
-          <div>
-            <label for="quality">Quality (<span id="qv">0.8</span>)</label>
-            <input id="quality" type="range" min="0.1" max="1" step="0.05" value="0.8" />
-          </div>
-          <div class="full">
-            <label for="bg">Background (for JPEG/WebP when transparent)</label>
-            <input id="bg" type="text" value="#00000000" title="Use CSS color like #ffffff or transparent (#RRGGBBAA supported)" />
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="btnResize" class="btn primary" disabled>Resize</button>
-          <button id="btnReset" class="btn ghost" disabled>Reset</button>
-          <button id="btnClear" class="btn danger" disabled>Clear</button>
-        </div>
-      </section>
-
-      <!-- Right: Preview -->
-      <section class="card preview-wrap">
-        <div class="preview">
-          <canvas id="canvas" aria-label="Output preview"></canvas>
-        </div>
-        <div class="meta" id="outMeta" hidden>
-          <div><strong>Output:</strong> <span id="outDims">—</span></div>
-          <div><strong>Size:</strong> <span id="outSize">—</span></div>
-        </div>
-        <div class="actions">
-          <a id="download" class="btn primary" download="resized.webp" href="#" style="display:none">Download</a>
-          <button id="copy" class="btn" disabled>Copy to Clipboard</button>
-        </div>
-        <p class="note">All processing happens locally in your browser. Your images never leave your device.</p>
-      </section>
-    </div>
-
-    <footer>
-      Built with ❤️ — Works offline once loaded.
-    </footer>
-  </div>
+  <canvas id="canvas"></canvas>
 
   <script>
-    const el = (id) => document.getElementById(id);
-    const drop = el('drop');
-    const fileInput = el('file');
-    const canvas = el('canvas');
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    let img = new Image();
 
-    const widthI = el('width');
-    const heightI = el('height');
-    const lockI = el('lock');
-    const formatI = el('format');
-    const qualityI = el('quality');
-    const qv = el('qv');
-    const bgI = el('bg');
-    const fitRadios = [el('contain'), el('cover'), el('stretch')];
-
-    const btnResize = el('btnResize');
-    const btnReset = el('btnReset');
-    const btnClear = el('btnClear');
-    const downloadA = el('download');
-    const copyBtn = el('copy');
-
-    const sourceMeta = el('sourceMeta');
-    const origDims = el('origDims');
-    const origSize = el('origSize');
-    const outMeta = el('outMeta');
-    const outDims = el('outDims');
-    const outSize = el('outSize');
-
-    let originalImage = null; // {img, w, h, type, name, size}
-    let currentBlob = null;
-
-    function prettyBytes(n) {
-      if (!Number.isFinite(n)) return '—';
-      const u = ['B','KB','MB','GB'];
-      let i = 0;
-      while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
-      return `${n.toFixed(n < 10 && i>0 ? 2 : 0)} ${u[i]}`;
-    }
-
-    function hexToRgba(hex) {
-      // supports #RRGGBB and #RRGGBBAA
-      if (!hex) return [0,0,0,0];
-      const m = hex.trim().replace('#','');
-      if (m.length === 6) {
-        const r = parseInt(m.slice(0,2),16);
-        const g = parseInt(m.slice(2,4),16);
-        const b = parseInt(m.slice(4,6),16);
-        return [r,g,b,255];
-      }
-      if (m.length === 8) {
-        const r = parseInt(m.slice(0,2),16);
-        const g = parseInt(m.slice(2,4),16);
-        const b = parseInt(m.slice(4,6),16);
-        const a = parseInt(m.slice(6,8),16);
-        return [r,g,b,a];
-      }
-      // fallback transparent
-      return [0,0,0,0];
-    }
-
-    async function loadFile(file) {
-      if (!file || !file.type.startsWith('image/')) return;
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.decoding = 'async';
-      img.onload = () => {
-        URL.revokeObjectURL(url);
-        originalImage = { img, w: img.naturalWidth, h: img.naturalHeight, type: file.type, name: file.name, size: file.size };
-        widthI.value = img.naturalWidth;
-        heightI.value = img.naturalHeight;
-        updateOrigMeta();
-        enableControls(true);
-        // Draw original immediately
-        drawPreview(img.naturalWidth, img.naturalHeight, 'contain');
-        currentBlob = null; updateOutMeta();
+    upload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = event.target.result;
       };
-      img.onerror = () => URL.revokeObjectURL(url);
-      img.src = url;
-    }
-
-    function updateOrigMeta() {
-      if (!originalImage) return;
-      sourceMeta.hidden = false;
-      origDims.textContent = `${originalImage.w} × ${originalImage.h}`;
-      origSize.textContent = prettyBytes(originalImage.size);
-    }
-
-    function enableControls(enable) {
-      [btnResize, btnReset, btnClear, copyBtn].forEach(b => b.disabled = !enable);
-    }
-
-    function fitMode() {
-      const r = fitRadios.find(r => r.checked);
-      return r ? r.value : 'contain';
-    }
-
-    function computeTargetSize() {
-      if (!originalImage) return {w:0, h:0};
-      let w = parseInt(widthI.value, 10);
-      let h = parseInt(heightI.value, 10);
-      const lock = lockI.checked;
-      const ow = originalImage.w, oh = originalImage.h;
-
-      if (Number.isNaN(w) && Number.isNaN(h)) { w = ow; h = oh; }
-      else if (Number.isNaN(w)) { w = lock ? Math.round(h * ow / oh) : ow; }
-      else if (Number.isNaN(h)) { h = lock ? Math.round(w * oh / ow) : oh; }
-      else if (lock) {
-        // When both provided but locked, treat as bounding box depending on fit
-        const mode = fitMode();
-        if (mode === 'contain') {
-          const s = Math.min(w/ow, h/oh);
-          w = Math.max(1, Math.round(ow * s));
-          h = Math.max(1, Math.round(oh * s));
-        } else if (mode === 'cover') {
-          const s = Math.max(w/ow, h/oh);
-          w = Math.max(1, Math.round(ow * s));
-          h = Math.max(1, Math.round(oh * s));
-        } // stretch uses exact
-      }
-      return { w: Math.max(1, w), h: Math.max(1, h) };
-    }
-
-    function drawPreview(tw, th, mode='contain') {
-      if (!originalImage) return;
-      const { w: ow, h: oh } = originalImage;
-      canvas.width = tw; canvas.height = th;
-
-      // background (handles transparent -> jpeg)
-      const [r,g,b,a] = hexToRgba(bgI.value || '#00000000');
-      ctx.clearRect(0,0,tw,th);
-      if (a > 0) {
-        ctx.fillStyle = `rgba(${r},${g},${b},${(a/255).toFixed(3)})`;
-        ctx.fillRect(0,0,tw,th);
-      }
-
-      let sx=0, sy=0, sw=ow, sh=oh, dx=0, dy=0, dw=tw, dh=th;
-
-      if (mode === 'contain') {
-        const s = Math.min(tw/ow, th/oh);
-        dw = Math.round(ow * s);
-        dh = Math.round(oh * s);
-        dx = Math.round((tw - dw)/2);
-        dy = Math.round((th - dh)/2);
-      } else if (mode === 'cover') {
-        const s = Math.max(tw/ow, th/oh);
-        sw = Math.round(tw / s);
-        sh = Math.round(th / s);
-        sx = Math.round((ow - sw)/2);
-        sy = Math.round((oh - sh)/2);
-      } // stretch uses defaults
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(originalImage.img, sx, sy, sw, sh, dx, dy, dw, dh);
-    }
-
-    async function generateOutput() {
-      if (!originalImage) return;
-      const { w, h } = computeTargetSize();
-      const mode = fitMode();
-      drawPreview(w, h, mode);
-      const type = formatI.value;
-      const quality = parseFloat(qualityI.value);
-      const blob = await new Promise(res => canvas.toBlob(res, type, (type === 'image/png') ? undefined : quality));
-      currentBlob = blob;
-      updateOutMeta();
-      // set download link
-      const ext = type.split('/')[1] || 'png';
-      const base = (originalImage.name || 'image').replace(/\.[^.]+$/, '');
-      downloadA.download = `${base}-${w}x${h}.${ext}`;
-      downloadA.href = URL.createObjectURL(blob);
-      downloadA.style.display = 'inline-block';
-      copyBtn.disabled = false;
-    }
-
-    function updateOutMeta() {
-      if (!originalImage) return;
-      const { w, h } = computeTargetSize();
-      outMeta.hidden = false;
-      outDims.textContent = `${w} × ${h}`;
-      outSize.textContent = currentBlob ? prettyBytes(currentBlob.size) : '—';
-    }
-
-    async function copyToClipboard() {
-      if (!currentBlob) return;
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ [currentBlob.type]: currentBlob })
-        ]);
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => (copyBtn.textContent = 'Copy to Clipboard'), 1200);
-      } catch (e) {
-        alert('Clipboard copy failed in this browser. Use Download instead.');
-      }
-    }
-
-    function resetControls() {
-      if (!originalImage) return;
-      widthI.value = originalImage.w;
-      heightI.value = originalImage.h;
-      lockI.checked = true;
-      el('contain').checked = true;
-      formatI.value = 'image/webp';
-      qualityI.value = 0.8; qv.textContent = '0.8';
-      bgI.value = '#00000000';
-      drawPreview(originalImage.w, originalImage.h, 'contain');
-      currentBlob = null; updateOutMeta();
-      downloadA.style.display = 'none'; downloadA.removeAttribute('href');
-      copyBtn.disabled = true;
-    }
-
-    function clearAll() {
-      originalImage = null; currentBlob = null;
-      enableControls(false);
-      sourceMeta.hidden = true; outMeta.hidden = true;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      canvas.width = 0; canvas.height = 0;
-      downloadA.style.display = 'none'; downloadA.removeAttribute('href');
-    }
-
-    // Events
-    fileInput.addEventListener('change', (e) => loadFile(e.target.files[0]));
-
-    ['dragenter','dragover'].forEach(evt => drop.addEventListener(evt, (e) => {
-      e.preventDefault(); e.stopPropagation();
-      drop.classList.add('dragover');
-    }));
-    ['dragleave','drop'].forEach(evt => drop.addEventListener(evt, (e) => {
-      e.preventDefault(); e.stopPropagation();
-      drop.classList.remove('dragover');
-    }));
-    drop.addEventListener('drop', (e) => {
-      const f = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (f) loadFile(f);
+      reader.readAsDataURL(file);
     });
-    drop.addEventListener('click', () => fileInput.click());
-    drop.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
 
-    ;[widthI, heightI, lockI, formatI, bgI, ...fitRadios].forEach(control => control.addEventListener('input', () => {
-      if (!originalImage) return;
-      const { w, h } = computeTargetSize();
-      drawPreview(w, h, fitMode());
-      updateOutMeta();
-    }));
-    qualityI.addEventListener('input', () => { qv.textContent = qualityI.value; });
+    function resizeImage() {
+      const width = parseInt(document.getElementById('width').value) || img.width;
+      const height = parseInt(document.getElementById('height').value) || img.height;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+    }
 
-    btnResize.addEventListener('click', generateOutput);
-    btnReset.addEventListener('click', resetControls);
-    btnClear.addEventListener('click', clearAll);
-    copyBtn.addEventListener('click', copyToClipboard);
+    function copyImage() {
+      canvas.toBlob(blob => {
+        const item = new ClipboardItem({ 'image/png': blob });
+        navigator.clipboard.write([item]);
+        alert('Image copied to clipboard!');
+      });
+    }
 
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (!originalImage) return;
-      if (e.ctrlKey && e.key.toLowerCase() === 's') {
-        e.preventDefault();
-        generateOutput();
-        if (downloadA.href) downloadA.click();
-      }
-    });
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = 'resized-image.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
   </script>
 </body>
 </html>
+
+
