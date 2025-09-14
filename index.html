@@ -11,7 +11,6 @@
 <!-- pdf.js (PDF → Image & PDF compression via rasterization) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-  // Ensure the pdf.js worker is set
   if (window.pdfjsLib) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
@@ -38,7 +37,7 @@
   }
   .brand{
     font-weight:700;
-    position:absolute; left:16px;        /* keep logo/brand on the left */
+    position:absolute; left:16px;        /* keep logo left */
   }
   .nav ul{list-style:none;margin:0;padding:0;display:flex;gap:12px}
   .nav > ul > li{position:relative}
@@ -62,10 +61,8 @@
     border-radius:12px; box-shadow:var(--shadow);
     padding:12px 14px; display:none; z-index:1000;
   }
-  /* Open via JS */
-  .nav li.open .dropdown{display:block}
-  /* Disable hover-open behavior entirely */
-  .nav li:hover .dropdown, .nav li:focus-within .dropdown{display:none !important}
+  /* Force open state to show (fix) */
+  .nav li.open .dropdown{display:block !important;}
 
   .dropdown a{
     display:block; padding:8px 6px; border-radius:8px;
@@ -102,7 +99,7 @@
   <div class="brand">ResizeFree</div>
   <ul>
     <li>
-      <button class="nav-link">Image Tools <span class="caret">▼</span></button>
+      <button class="nav-link" type="button">Image Tools <span class="caret">▼</span></button>
       <div class="dropdown">
         <a href="#image-resizer" data-section="image-resizer">Image Resizer</a>
         <a href="#bulk-image-resizer" data-section="bulk-image-resizer">Bulk Image Resizer</a>
@@ -116,7 +113,7 @@
       </div>
     </li>
     <li>
-      <button class="nav-link">Convert <span class="caret">▼</span></button>
+      <button class="nav-link" type="button">Convert <span class="caret">▼</span></button>
       <div class="dropdown">
         <a href="#image-converter" data-section="image-converter">Image Converter</a>
         <a href="#png-to-jpg" data-section="png-to-jpg">PNG to JPG</a>
@@ -125,7 +122,7 @@
       </div>
     </li>
     <li>
-      <button class="nav-link">PDF Tools <span class="caret">▼</span></button>
+      <button class="nav-link" type="button">PDF Tools <span class="caret">▼</span></button>
       <div class="dropdown">
         <a href="#pdf-to-image" data-section="pdf-to-image">PDF to Image</a>
         <a href="#compress-pdf" data-section="compress-pdf">Compress PDF</a>
@@ -135,7 +132,7 @@
       </div>
     </li>
     <li>
-      <button class="nav-link" data-section="about">About</button>
+      <button class="nav-link" data-section="about" type="button">About</button>
     </li>
   </ul>
 </nav>
@@ -946,6 +943,7 @@
 
 </body>
 </html>
+
 
 
 
