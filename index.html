@@ -8,36 +8,73 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       text-align: center;
-      padding: 40px;
-      background: #f9f9f9;
+      width: 400px;
+      max-width: 90%;
     }
     h1 {
+      font-size: 22px;
       margin-bottom: 20px;
+      color: #333;
     }
-    input, button {
-      margin: 10px;
+    input[type="file"], input[type="number"] {
+      margin: 10px 0;
       padding: 10px;
-      font-size: 16px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      margin: 8px 4px;
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
     canvas {
       margin-top: 20px;
       border: 1px solid #ddd;
       max-width: 100%;
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  <h1>ResizeFree – Free Online Image Resizer</h1>
+  <div class="container">
+    <h1>ResizeFree – Free Online Image Resizer</h1>
 
-  <input type="file" id="upload" accept="image/*"><br>
-  <input type="number" id="width" placeholder="Width (px)">
-  <input type="number" id="height" placeholder="Height (px)">
-  <button onclick="resizeImage()">Resize</button>
-  <button onclick="copyImage()">Copy Image</button>
-  <button onclick="downloadImage()">Download Image</button>
+    <input type="file" id="upload" accept="image/*">
+    <input type="number" id="width" placeholder="Width (px)">
+    <input type="number" id="height" placeholder="Height (px)">
+    
+    <div>
+      <button onclick="resizeImage()">Resize</button>
+      <button onclick="copyImage()">Copy</button>
+      <button onclick="downloadImage()">Download</button>
+    </div>
 
-  <canvas id="canvas"></canvas>
+    <canvas id="canvas"></canvas>
+  </div>
 
   <script>
     const upload = document.getElementById('upload');
@@ -85,5 +122,7 @@
   </script>
 </body>
 </html>
+
+
 
 
