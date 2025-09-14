@@ -7,18 +7,18 @@
 <meta name="description" content="ResizeFree is a fast, free online suite: resize, compress, crop, flip, rotate, convert formats, pick colors, make memes, and convert images ↔ PDF—right in your browser.">
 
 <!-- jsPDF (images → PDF and rebuilding PDFs) -->
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <!-- pdf.js (PDF → Image & PDF compression via rasterization) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
-  // pdf.js worker
-  if (window['pdfjsLib']) {
+  // Ensure the pdf.js worker is set
+  if (window.pdfjsLib) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
 </script>
 
 <style>
-  :root {
+  :root{
     --bg:#f0f2f5; --card:#fff; --text:#333; --muted:#666;
     --primary:#007bff; --primary-hover:#0056b3;
     --border:#e5e7eb; --shadow:0 4px 12px rgba(0,0,0,.1);
@@ -27,17 +27,50 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;font-family:Arial, sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh}
+
   /* NAV */
-  .nav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;gap:16px;padding:0 16px}
-  .brand{font-weight:700}
+  .nav{
+    position:sticky; top:0; z-index:50;
+    background:#fff; border-bottom:1px solid var(--border);
+    height:var(--nav-h); display:flex; align-items:center; gap:16px;
+    padding:0 16px;
+    justify-content:center;              /* center menus */
+  }
+  .brand{
+    font-weight:700;
+    position:absolute; left:16px;        /* keep logo/brand on the left */
+  }
   .nav ul{list-style:none;margin:0;padding:0;display:flex;gap:12px}
   .nav > ul > li{position:relative}
-  .nav a,.nav button.nav-link{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:8px;color:var(--text);text-decoration:none;border:none;background:transparent;cursor:pointer;font-size:14px}
+  .nav a,.nav button.nav-link{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 10px; border-radius:8px;
+    color:var(--text); text-decoration:none; border:none; background:transparent;
+    cursor:pointer; font-size:14px;
+  }
   .nav a:hover,.nav button.nav-link:hover{background:#f6f7f8}
   .caret{font-size:12px;color:var(--muted)}
-  .dropdown{position:absolute;left:0;top:calc(100% + 8px);background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px;min-width:260px;display:none}
-  .nav li:hover .dropdown,.nav li:focus-within .dropdown{display:block}
-  .dropdown a{display:block;padding:8px 6px;border-radius:8px;color:var(--text);text-decoration:none;font-size:14px;white-space:nowrap}
+
+  /* Centered dropdown panels (open on click) */
+  .dropdown{
+    position:fixed;                       /* center in viewport */
+    top:calc(var(--nav-h) + 8px);
+    left:50%; transform:translateX(-50%);
+    width:min(1100px, calc(100vw - 24px));
+    max-height:70vh; overflow:auto;
+    background:#fff; border:1px solid var(--border);
+    border-radius:12px; box-shadow:var(--shadow);
+    padding:12px 14px; display:none; z-index:1000;
+  }
+  /* Open via JS */
+  .nav li.open .dropdown{display:block}
+  /* Disable hover-open behavior entirely */
+  .nav li:hover .dropdown, .nav li:focus-within .dropdown{display:none !important}
+
+  .dropdown a{
+    display:block; padding:8px 6px; border-radius:8px;
+    color:var(--text); text-decoration:none; font-size:14px; white-space:nowrap;
+  }
   .dropdown a:hover{background:#f6f7f8}
 
   /* MAIN */
@@ -47,13 +80,15 @@
   .full{grid-column:1/-1}
   h1{font-size:22px;margin:0 0 10px}
   p.sub{margin:0 0 16px;color:var(--muted);font-size:14px}
-  input[type="file"],input[type="number"],input[type="text"],select,textarea,input[type="range"]{width:100%;margin:8px 0;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px}
+  input[type="file"],input[type="number"],input[type="text"],select,textarea,input[type="range"]{
+    width:100%;margin:8px 0;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:14px
+  }
   .btns{margin-top:8px;display:flex;flex-wrap:wrap;gap:8px}
   .btn{padding:10px 16px;border:none;border-radius:8px;background:var(--primary);color:#fff;cursor:pointer;font-size:14px;transition:.15s}
   .btn:hover{background:var(--primary-hover)}
   .muted{color:var(--muted);font-size:13px}
   .row{display:flex;gap:8px;flex-wrap:wrap}
-  canvas, .preview{width:100%;border:1px solid #ddd;border-radius:8px;min-height:260px;display:block;background:#fafafa}
+  canvas,.preview{width:100%;border:1px solid #ddd;border-radius:8px;min-height:260px;display:block;background:#fafafa}
   .section{display:none}
   .section.active{display:block}
   .placeholder{padding:14px;border:1px dashed #c9cdd3;border-radius:10px;color:var(--muted);background:#fafbfc}
@@ -341,7 +376,7 @@
       </div>
     </section>
 
-    <!-- NEW: PDF → Image -->
+    <!-- PDF → Image -->
     <section id="pdf-to-image" class="section">
       <h1>PDF to Image (PNG/JPG)</h1>
       <p class="sub">Render a chosen page to an image and download.</p>
@@ -366,13 +401,11 @@
         </div>
         <div class="full"><canvas id="pdfi-canvas"></canvas></div>
       </div>
-      <p class="muted">Note: For multi-page downloads as separate images we trigger one download per page.</p>
-      <div class="btns">
-        <button class="btn" id="pdfi-render-all">Render & Download All Pages</button>
-      </div>
+      <p class="muted">For multi-page downloads we trigger one file per page.</p>
+      <div class="btns"><button class="btn" id="pdfi-render-all">Render & Download All Pages</button></div>
     </section>
 
-    <!-- NEW: Compress PDF -->
+    <!-- Compress PDF -->
     <section id="compress-pdf" class="section">
       <h1>Compress PDF</h1>
       <p class="sub">Rasterize pages to images and rebuild a smaller PDF.</p>
@@ -387,16 +420,14 @@
             <label class="muted">Image quality (JPEG): <span id="pdfc-q-v">0.75</span></label>
             <input type="range" id="pdfc-q" min="0.4" max="0.95" step="0.05" value="0.75">
           </div>
-          <div class="btns">
-            <button class="btn" id="pdfc-run">Compress & Download</button>
-          </div>
-          <p class="muted">Best for PDFs made of scans/images. Vector PDFs may become rasterized.</p>
+          <div class="btns"><button class="btn" id="pdfc-run">Compress & Download</button></div>
+          <p class="muted">Best for scanned/image-heavy PDFs. Vector PDFs will be rasterized.</p>
         </div>
         <div class="full"><div id="pdfc-status" class="placeholder">Waiting for a PDF…</div></div>
       </div>
     </section>
 
-    <!-- IMAGE → PDF TOOLS -->
+    <!-- IMAGE → PDF -->
     <section id="image-to-pdf" class="section">
       <h1>Image to PDF</h1>
       <div class="grid">
@@ -451,17 +482,47 @@
 </main>
 
 <script>
-  /* ---------- Router ---------- */
+  /* --------- Router + centered dropdown controls --------- */
   const sections=[...document.querySelectorAll('.section')];
+
   function showSection(id){
     sections.forEach(s=>s.classList.remove('active'));
-    const el=document.getElementById(id); if(el) el.classList.add('active');
+    const el=document.getElementById(id);
+    if(el){ el.classList.add('active'); }
     history.replaceState(null,'','#'+id);
     document.querySelector('.main').scrollIntoView({behavior:'smooth',block:'start'});
   }
-  document.querySelectorAll('[data-section]').forEach(a=>{
-    a.addEventListener('click',e=>{ e.preventDefault(); showSection(a.dataset.section); });
+
+  // Event delegation for [data-section] links (works for nav + content)
+  document.addEventListener('click', (e)=>{
+    const link=e.target.closest('[data-section]');
+    if(link){
+      e.preventDefault();
+      showSection(link.dataset.section);
+      // close any open dropdowns after navigation
+      document.querySelectorAll('.nav li.open').forEach(li=>li.classList.remove('open'));
+    }
   });
+
+  // Centered dropdowns: open/close on click
+  document.querySelectorAll('.nav > ul > li > .nav-link').forEach(btn=>{
+    btn.addEventListener('click',(e)=>{
+      e.preventDefault();
+      const li=btn.closest('li');
+      const wasOpen=li.classList.contains('open');
+      document.querySelectorAll('.nav li.open').forEach(x=>x.classList.remove('open'));
+      if(!wasOpen) li.classList.add('open');
+    });
+  });
+
+  // Close dropdowns when clicking outside nav or pressing ESC
+  document.addEventListener('click', (e)=>{
+    const insideNav = e.target.closest('.nav');
+    if(!insideNav){ document.querySelectorAll('.nav li.open').forEach(li=>li.classList.remove('open')); }
+  });
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape'){ document.querySelectorAll('.nav li.open').forEach(li=>li.classList.remove('open')); }});
+
+  // Handle deep links
   window.addEventListener('load',()=>{
     const hash=location.hash.replace('#','');
     if(hash && document.getElementById(hash)) showSection(hash);
@@ -472,7 +533,9 @@
     const c=document.getElementById(canvasId);
     if(!c || !c.width) return alert('Nothing to download yet.');
     const a=document.createElement('a');
-    a.download=filename; a.href=c.toDataURL(filename.endsWith('.jpg')?'image/jpeg':'image/png'); a.click();
+    a.download=filename;
+    a.href=c.toDataURL(filename.endsWith('.jpg')?'image/jpeg':'image/png');
+    a.click();
   }
   function copyCanvas(canvasId){
     const c=document.getElementById(canvasId);
@@ -488,7 +551,15 @@
   let rzImg=new Image();
   document.getElementById('rz-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('rz-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ rzImg.onload=()=>{ const c=document.getElementById('rz-canvas'), ctx=c.getContext('2d'); c.width=rzImg.width; c.height=rzImg.height; ctx.drawImage(rzImg,0,0); }; rzImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      rzImg.onload=()=>{
+        const c=document.getElementById('rz-canvas'), ctx=c.getContext('2d');
+        c.width=rzImg.width; c.height=rzImg.height; ctx.drawImage(rzImg,0,0);
+      };
+      rzImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function resizeImage(){
     if(!rzImg.src) return alert('Upload an image first.');
@@ -505,7 +576,12 @@
     const list=e.target.files; const box=document.getElementById('bulk-preview');
     if(!list.length){ box.textContent='Selected files will preview here.'; return; }
     box.innerHTML=''; [...list].slice(0,6).forEach(f=>{
-      const fr=new FileReader(); fr.onload=ev=>{ const im=document.createElement('img'); im.src=ev.target.result; im.className='mini'; box.appendChild(im); }; fr.readAsDataURL(f);
+      const fr=new FileReader();
+      fr.onload=ev=>{
+        const im=document.createElement('img'); im.src=ev.target.result; im.className='mini';
+        box.appendChild(im);
+      };
+      fr.readAsDataURL(f);
     });
   });
   document.getElementById('bulk-run')?.addEventListener('click', async ()=>{
@@ -513,8 +589,10 @@
     const W=parseInt(document.getElementById('bulk-w').value), H=parseInt(document.getElementById('bulk-h').value);
     for(const f of files){
       await new Promise(res=>{
-        const fr=new FileReader(); fr.onload=e=>{
-          const img=new Image(); img.onload=()=>{
+        const fr=new FileReader();
+        fr.onload=e=>{
+          const img=new Image();
+          img.onload=()=>{
             let w=W, h=H;
             if(!W && !H){ w=img.width; h=img.height; }
             else if(!W) w=Math.round(img.width*(H/img.height));
@@ -523,8 +601,10 @@
             c.getContext('2d').drawImage(img,0,0,w,h);
             const a=document.createElement('a'); a.download=(f.name.replace(/\.[^.]+$/,'')+'_resized.png'); a.href=c.toDataURL('image/png'); a.click();
             res();
-          }; img.src=e.target.result;
-        }; fr.readAsDataURL(f);
+          };
+          img.src=e.target.result;
+        };
+        fr.readAsDataURL(f);
       });
     }
     alert('Bulk resizing finished.');
@@ -536,7 +616,15 @@
   let cmpImg=new Image();
   document.getElementById('cmp-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('cmp-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ cmpImg.onload=()=>{ const c=document.getElementById('cmp-canvas'), ctx=c.getContext('2d'); c.width=cmpImg.width; c.height=cmpImg.height; ctx.drawImage(cmpImg,0,0); }; cmpImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      cmpImg.onload=()=>{
+        const c=document.getElementById('cmp-canvas'), ctx=c.getContext('2d');
+        c.width=cmpImg.width; c.height=cmpImg.height; ctx.drawImage(cmpImg,0,0);
+      };
+      cmpImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function compressImage(){
     if(!cmpImg.src) return alert('Upload an image.');
@@ -558,12 +646,25 @@
   const crpCanvas=document.getElementById('crp-canvas'), crpCtx=crpCanvas.getContext('2d');
   document.getElementById('crp-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('crp-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ crpImg.onload=()=>{ crpCanvas.width=crpImg.width; crpCanvas.height=crpImg.height; crpCtx.drawImage(crpImg,0,0); }; crpImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      crpImg.onload=()=>{
+        crpCanvas.width=crpImg.width; crpCanvas.height=crpImg.height; crpCtx.drawImage(crpImg,0,0);
+      };
+      crpImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function startCrop(){
     if(!crpImg.src) return alert('Upload an image.');
     crpCanvas.onmousedown=(e)=>{ crpDragging=true; const r=crpCanvas.getBoundingClientRect(); crpStart={x:e.clientX-r.left, y:e.clientY-r.top}; };
-    crpCanvas.onmousemove=(e)=>{ if(!crpDragging) return; const r=crpCanvas.getBoundingClientRect(); crpEnd={x:e.clientX-r.left, y=e.clientY-r.top}; crpCtx.drawImage(crpImg,0,0); if(crpStart&&crpEnd){ crpCtx.strokeStyle='#00a3ff'; crpCtx.lineWidth=2; crpCtx.setLineDash([6,4]); crpCtx.strokeRect(crpStart.x,crpStart.y, crpEnd.x-crpStart.x, crpEnd.y-crpStart.y); crpCtx.setLineDash([]);} };
+    crpCanvas.onmousemove=(e)=>{ if(!crpDragging) return;
+      const r=crpCanvas.getBoundingClientRect(); crpEnd={x:e.clientX-r.left, y:e.clientY-r.top};
+      crpCtx.drawImage(crpImg,0,0);
+      if(crpStart&&crpEnd){ crpCtx.strokeStyle='#00a3ff'; crpCtx.lineWidth=2; crpCtx.setLineDash([6,4]);
+        crpCtx.strokeRect(crpStart.x,crpStart.y, crpEnd.x-crpStart.x, crpEnd.y-crpStart.y); crpCtx.setLineDash([]);
+      }
+    };
     window.onmouseup=()=>{ crpDragging=false; };
   }
   function applyCrop(){
@@ -580,7 +681,14 @@
   let flpImg=new Image(); const flpCanvas=document.getElementById('flp-canvas'), flpCtx=flpCanvas.getContext('2d');
   document.getElementById('flp-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('flp-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ flpImg.onload=()=>{ flpCanvas.width=flpImg.width; flpCanvas.height=flpImg.height; flpCtx.drawImage(flpImg,0,0); }; flpImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      flpImg.onload=()=>{
+        flpCanvas.width=flpImg.width; flpCanvas.height=flpImg.height; flpCtx.drawImage(flpImg,0,0);
+      };
+      flpImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function flipImage(dir){
     if(!flpImg.src) return alert('Upload an image.');
@@ -595,7 +703,14 @@
   let rotImg=new Image(); const rotCanvas=document.getElementById('rot-canvas'), rotCtx=rotCanvas.getContext('2d');
   document.getElementById('rot-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('rot-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ rotImg.onload=()=>{ rotCanvas.width=rotImg.width; rotCanvas.height=rotImg.height; rotCtx.drawImage(rotImg,0,0); }; rotImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      rotImg.onload=()=>{
+        rotCanvas.width=rotImg.width; rotCanvas.height=rotImg.height; rotCtx.drawImage(rotImg,0,0);
+      };
+      rotImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function rotateImage(deg){ rotateGeneric(deg); }
   function rotateCustom(){ const d=parseFloat(document.getElementById('rot-deg').value||'0'); rotateGeneric(d); }
@@ -612,7 +727,14 @@
   let enlImg=new Image(); const enlCanvas=document.getElementById('enl-canvas'), enlCtx=enlCanvas.getContext('2d');
   document.getElementById('enl-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('enl-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ enlImg.onload=()=>{ enlCanvas.width=enlImg.width; enlCanvas.height=enlImg.height; enlCtx.drawImage(enlImg,0,0); }; enlImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      enlImg.onload=()=>{
+        enlCanvas.width=enlImg.width; enlCanvas.height=enlImg.height; enlCtx.drawImage(enlImg,0,0);
+      };
+      enlImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function enlargeImage(){
     if(!enlImg.src) return alert('Upload an image.');
@@ -626,7 +748,14 @@
   let clrImg=new Image(); const clrCanvas=document.getElementById('clr-canvas'), clrCtx=clrCanvas.getContext('2d');
   document.getElementById('clr-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('clr-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ clrImg.onload=()=>{ clrCanvas.width=clrImg.width; clrCanvas.height=clrImg.height; clrCtx.drawImage(clrImg,0,0); }; clrImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      clrImg.onload=()=>{
+        clrCanvas.width=clrImg.width; clrCanvas.height=clrImg.height; clrCtx.drawImage(clrImg,0,0);
+      };
+      clrImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   clrCanvas?.addEventListener('click',(e)=>{
     if(!clrCanvas.width) return;
@@ -640,7 +769,14 @@
   let memImg=new Image(); const memCanvas=document.getElementById('mem-canvas'), memCtx=memCanvas.getContext('2d');
   document.getElementById('mem-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('mem-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ memImg.onload=()=>{ memCanvas.width=memImg.width; memCanvas.height=memImg.height; memCtx.drawImage(memImg,0,0); }; memImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      memImg.onload=()=>{
+        memCanvas.width=memImg.width; memCanvas.height=memImg.height; memCtx.drawImage(memImg,0,0);
+      };
+      memImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function renderMeme(){
     if(!memImg.src) return alert('Upload an image.');
@@ -659,7 +795,14 @@
   let cvImg=new Image(); const cvCanvas=document.getElementById('cv-canvas'), cvCtx=cvCanvas.getContext('2d');
   document.getElementById('cv-upload')?.addEventListener('change', ()=>{
     const f=document.getElementById('cv-upload').files[0]; if(!f) return;
-    const fr=new FileReader(); fr.onload=e=>{ cvImg.onload=()=>{ cvCanvas.width=cvImg.width; cvCanvas.height=cvImg.height; cvCtx.drawImage(cvImg,0,0); }; cvImg.src=e.target.result; }; fr.readAsDataURL(f);
+    const fr=new FileReader();
+    fr.onload=e=>{
+      cvImg.onload=()=>{
+        cvCanvas.width=cvImg.width; cvCanvas.height=cvImg.height; cvCtx.drawImage(cvImg,0,0);
+      };
+      cvImg.src=e.target.result;
+    };
+    fr.readAsDataURL(f);
   });
   function convertImage(){
     if(!cvImg.src) return alert('Upload an image.');
@@ -676,12 +819,16 @@
   function simpleConvert(inputId, canvasId, mime){
     const input=document.getElementById(inputId);
     const file=input?.files?.[0]; if(!file) return alert('Choose an image first.');
-    const fr=new FileReader(); fr.onload=e=>{
-      const img=new Image(); img.onload=()=>{
+    const fr=new FileReader();
+    fr.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
         const c=document.getElementById(canvasId), ctx=c.getContext('2d');
         c.width=img.width; c.height=img.height; ctx.drawImage(img,0,0);
-      }; img.src=e.target.result;
-    }; fr.readAsDataURL(file);
+      };
+      img.src=e.target.result;
+    };
+    fr.readAsDataURL(file);
   }
 
   /* ---------- Image → PDF ---------- */
@@ -694,6 +841,7 @@
     reader.onload=(e)=>{
       const img=new Image();
       img.onload=()=>{
+        if(!window.jspdf){ return alert('jsPDF not loaded'); }
         const { jsPDF } = window.jspdf;
         const doc=new jsPDF({unit:'pt', format:size});
         const pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight();
@@ -709,23 +857,22 @@
     reader.readAsDataURL(file);
   }
 
-  /* ---------- NEW: PDF → Image ---------- */
+  /* ---------- PDF → Image ---------- */
   let pdfiDoc=null;
   const pdfiUpload=document.getElementById('pdfi-upload');
   const pdfiPageSel=document.getElementById('pdfi-page');
   const pdfiScale=document.getElementById('pdfi-scale');
   const pdfiScaleV=document.getElementById('pdfi-scale-v');
-  pdfiScale.addEventListener('input', ()=>pdfiScaleV.textContent=pdfiScale.value);
+  pdfiScale?.addEventListener('input', ()=>pdfiScaleV.textContent=pdfiScale.value);
 
   pdfiUpload?.addEventListener('change', async ()=>{
     const file=pdfiUpload.files[0]; if(!file) return;
+    if(!window.pdfjsLib) return alert('PDF.js not loaded');
     const buf=await file.arrayBuffer();
     pdfiDoc=await pdfjsLib.getDocument({data:buf}).promise;
-    // populate pages
     pdfiPageSel.innerHTML='';
     for(let i=1;i<=pdfiDoc.numPages;i++){
-      const opt=document.createElement('option');
-      opt.value=i; opt.textContent='Page '+i;
+      const opt=document.createElement('option'); opt.value=i; opt.textContent='Page '+i;
       pdfiPageSel.appendChild(opt);
     }
   });
@@ -742,13 +889,13 @@
 
   document.getElementById('pdfi-render-all')?.addEventListener('click', async ()=>{
     if(!pdfiDoc) return alert('Load a PDF first.');
+    const fmt=document.getElementById('pdfi-format').value;
     for(let i=1;i<=pdfiDoc.numPages;i++){
       const page=await pdfiDoc.getPage(i);
       const viewport=page.getViewport({scale: parseFloat(pdfiScale.value||'1.2')});
       const c=document.createElement('canvas'), ctx=c.getContext('2d');
       c.width=viewport.width; c.height=viewport.height;
       await page.render({canvasContext:ctx, viewport}).promise;
-      const fmt=document.getElementById('pdfi-format').value;
       const a=document.createElement('a');
       a.download=`page-${i}.${fmt==='image/jpeg'?'jpg':'png'}`;
       a.href=c.toDataURL(fmt, fmt==='image/jpeg'?0.92:undefined);
@@ -756,18 +903,19 @@
     }
   });
 
-  /* ---------- NEW: Compress PDF ---------- */
+  /* ---------- Compress PDF ---------- */
   const pdfcUpload=document.getElementById('pdfc-upload');
   const pdfcScale=document.getElementById('pdfc-scale');
   const pdfcScaleV=document.getElementById('pdfc-scale-v');
   const pdfcQ=document.getElementById('pdfc-q');
   const pdfcQV=document.getElementById('pdfc-q-v');
   const pdfcStatus=document.getElementById('pdfc-status');
-  pdfcScale.addEventListener('input', ()=>pdfcScaleV.textContent=pdfcScale.value);
-  pdfcQ.addEventListener('input', ()=>pdfcQV.textContent=pdfcQ.value);
+  pdfcScale?.addEventListener('input', ()=>pdfcScaleV.textContent=pdfcScale.value);
+  pdfcQ?.addEventListener('input', ()=>pdfcQV.textContent=pdfcQ.value);
 
   document.getElementById('pdfc-run')?.addEventListener('click', async ()=>{
     const file=pdfcUpload.files?.[0]; if(!file) return alert('Choose a PDF.');
+    if(!window.pdfjsLib || !window.jspdf){ return alert('Libraries not loaded'); }
     pdfcStatus.textContent='Processing…';
     const ab=await file.arrayBuffer();
     const doc=await pdfjsLib.getDocument({data:ab}).promise;
@@ -783,7 +931,6 @@
       c.width=vp.width; c.height=vp.height;
       await page.render({canvasContext:ctx, viewport:vp}).promise;
 
-      // Fit to page while preserving aspect ratio
       const pageW=out.internal.pageSize.getWidth(), pageH=out.internal.pageSize.getHeight();
       const ratio=Math.min(pageW/c.width, pageH/c.height);
       const w=c.width*ratio, h=c.height*ratio, x=(pageW-w)/2, y=(pageH-h)/2;
@@ -799,7 +946,6 @@
 
 </body>
 </html>
-
 
 
 
